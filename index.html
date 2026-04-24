@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Physical Game Challenge</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@400;600;700&display=swap');
+
+:root {
+–bg: #0a0a0f;
+–surface: #12121a;
+–surface2: #1a1a26;
+–border: #2a2a3e;
+–accent: #ff3c5f;
+–accent2: #00e5ff;
+–accent3: #ffe600;
+–text: #e8e8f0;
+–muted: #6b6b8a;
+–beaten: #00ff88;
+–quit: #ff6b35;
+}
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 16px;
+min-height: 100vh;
+background-image:
+radial-gradient(ellipse at 20% 20%, rgba(255,60,95,0.08) 0%, transparent 50%),
+radial-gradient(ellipse at 80% 80%, rgba(0,229,255,0.06) 0%, transparent 50%);
+}
+
+h1 {
+font-family: ‘Press Start 2P’, monospace;
+font-size: clamp(10px, 2.5vw, 18px);
+color: var(–accent);
+text-shadow: 0 0 20px rgba(255,60,95,0.5);
+letter-spacing: 2px;
+}
+
+.header {
+padding: 20px 24px;
+border-bottom: 1px solid var(–border);
+display: flex;
+align-items: center;
+justify-content: space-between;
+flex-wrap: wrap;
+gap: 12px;
+background: var(–surface);
+}
+
+.stats-bar {
+display: flex;
+gap: 20px;
+flex-wrap: wrap;
+}
+
+.stat {
+display: flex;
+flex-direction: column;
+align-items: center;
+}
+
+.stat-num {
+font-family: ‘Press Start 2P’, monospace;
+font-size: 18px;
+color: var(–accent2);
+}
+
+.stat-label {
+font-size: 11px;
+color: var(–muted);
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-top: 2px;
+}
+
+.main {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 0;
+max-width: 1400px;
+margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+.main { grid-template-columns: 1fr; }
+}
+
+.panel {
+padding: 20px 24px;
+border-right: 1px solid var(–border);
+border-bottom: 1px solid var(–border);
+}
+
+.panel-title {
+font-family: ‘Press Start 2P’, monospace;
+font-size: 9px;
+color: var(–accent3);
+letter-spacing: 2px;
+margin-bottom: 16px;
+text-transform: uppercase;
+}
+
+/* CURRENT GAME */
+.current-game {
+background: var(–surface2);
+border: 1px solid var(–accent);
+border-radius: 8px;
+padding: 20px;
+margin-bottom: 16px;
+position: relative;
+overflow: hidden;
+}
+
+.current-game::before {
+content: ‘’;
+position: absolute;
+top: 0; left: 0; right: 0;
+height: 2px;
+background: linear-gradient(90deg, var(–accent), var(–accent2));
+}
+
+.current-game-title {
+font-size: 22px;
+font-weight: 700;
+color: #fff;
+margin-bottom: 4px;
+}
+
+.current-game-console {
+font-size: 13px;
+color: var(–accent2);
+text-transform: uppercase;
+letter-spacing: 2px;
+}
+
+.empty-state {
+text-align: center;
+color: var(–muted);
+padding: 40px 20px;
+font-size: 14px;
+}
+
+.btn {
+display: inline-flex;
+align-items: center;
+gap: 8px;
+padding: 10px 20px;
+border: none;
+border-radius: 6px;
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 14px;
+font-weight: 700;
+letter-spacing: 1px;
+text-transform: uppercase;
+cursor: pointer;
+transition: all 0.15s;
+}
+
+.btn-primary {
+background: var(–accent);
+color: #fff;
+}
+.btn-primary:hover { background: #ff1a40; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-success {
+background: var(–beaten);
+color: #000;
+}
+.btn-success:hover { background: #00cc6a; transform: translateY(-1px); }
+
+.btn-quit {
+background: var(–quit);
+color: #fff;
+}
+.btn-quit:hover { background: #e55a25; transform: translateY(-1px); }
+
+.btn-secondary {
+background: var(–surface2);
+color: var(–text);
+border: 1px solid var(–border);
+}
+.btn-secondary:hover { border-color: var(–accent2); color: var(–accent2); }
+
+.btn-wheel {
+background: linear-gradient(135deg, var(–accent2), #0088ff);
+color: #000;
+font-family: ‘Press Start 2P’, monospace;
+font-size: 9px;
+padding: 14px 24px;
+width: 100%;
+justify-content: center;
+}
+.btn-wheel:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,255,0.3); }
+
+.btn-draw {
+background: linear-gradient(135deg, var(–accent), #ff6b35);
+color: #fff;
+font-family: ‘Press Start 2P’, monospace;
+font-size: 9px;
+padding: 14px 24px;
+width: 100%;
+justify-content: center;
+margin-top: 10px;
+}
+.btn-draw:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,60,95,0.3); }
+.btn-draw:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.action-row {
+display: flex;
+gap: 10px;
+margin-top: 14px;
+flex-wrap: wrap;
+}
+
+/* WHEEL */
+.wheel-result {
+background: var(–surface2);
+border: 1px solid var(–accent2);
+border-radius: 8px;
+padding: 16px 20px;
+text-align: center;
+margin-bottom: 12px;
+}
+
+.wheel-result-console {
+font-family: ‘Press Start 2P’, monospace;
+font-size: 14px;
+color: var(–accent2);
+text-shadow: 0 0 15px rgba(0,229,255,0.5);
+}
+
+.wheel-result-label {
+font-size: 11px;
+color: var(–muted);
+text-transform: uppercase;
+letter-spacing: 2px;
+margin-bottom: 8px;
+}
+
+/* UNLOCK BAR */
+.unlock-bar-wrap {
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 16px;
+margin-bottom: 16px;
+}
+
+.unlock-label {
+display: flex;
+justify-content: space-between;
+font-size: 13px;
+color: var(–muted);
+margin-bottom: 10px;
+text-transform: uppercase;
+letter-spacing: 1px;
+}
+
+.unlock-pips {
+display: flex;
+gap: 8px;
+}
+
+.pip {
+flex: 1;
+height: 8px;
+border-radius: 4px;
+background: var(–border);
+transition: background 0.3s;
+}
+
+.pip.filled { background: var(–accent3); box-shadow: 0 0 8px rgba(255,230,0,0.4); }
+.pip.ready { background: var(–beaten); box-shadow: 0 0 8px rgba(0,255,136,0.4); animation: pulse 1s infinite; }
+
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.5; }
+}
+
+.unlock-ready {
+text-align: center;
+color: var(–beaten);
+font-family: ‘Press Start 2P’, monospace;
+font-size: 8px;
+margin-top: 10px;
+animation: pulse 1s infinite;
+}
+
+/* POOL LIST */
+.pool-controls {
+display: flex;
+gap: 8px;
+margin-bottom: 12px;
+flex-wrap: wrap;
+align-items: center;
+}
+
+.search-input {
+flex: 1;
+min-width: 140px;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 8px 12px;
+color: var(–text);
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 14px;
+outline: none;
+}
+.search-input:focus { border-color: var(–accent2); }
+.search-input::placeholder { color: var(–muted); }
+
+.filter-select {
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 8px 10px;
+color: var(–text);
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 13px;
+outline: none;
+cursor: pointer;
+}
+.filter-select:focus { border-color: var(–accent2); }
+
+.game-list {
+max-height: 420px;
+overflow-y: auto;
+scrollbar-width: thin;
+scrollbar-color: var(–border) transparent;
+}
+
+.game-item {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 10px 12px;
+border-radius: 6px;
+margin-bottom: 4px;
+background: var(–surface2);
+border: 1px solid transparent;
+transition: all 0.15s;
+gap: 8px;
+}
+
+.game-item:hover { border-color: var(–border); }
+.game-item.current { border-color: var(–accent); background: rgba(255,60,95,0.08); }
+.game-item.beaten { opacity: 0.4; }
+
+.game-item-info { flex: 1; min-width: 0; }
+
+.game-item-title {
+font-size: 14px;
+font-weight: 600;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
+.game-item-console {
+font-size: 11px;
+color: var(–muted);
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-top: 1px;
+}
+
+.badge {
+font-size: 10px;
+padding: 2px 8px;
+border-radius: 20px;
+font-weight: 700;
+letter-spacing: 0.5px;
+white-space: nowrap;
+text-transform: uppercase;
+}
+
+.badge-current { background: rgba(255,60,95,0.2); color: var(–accent); border: 1px solid var(–accent); }
+.badge-beaten { background: rgba(0,255,136,0.1); color: var(–beaten); border: 1px solid var(–beaten); }
+.badge-quit { background: rgba(255,107,53,0.1); color: var(–quit); border: 1px solid var(–quit); }
+
+/* LOG */
+.log-list {
+max-height: 300px;
+overflow-y: auto;
+scrollbar-width: thin;
+scrollbar-color: var(–border) transparent;
+}
+
+.log-item {
+padding: 10px 12px;
+border-radius: 6px;
+margin-bottom: 6px;
+background: var(–surface2);
+border-left: 3px solid var(–border);
+font-size: 13px;
+}
+
+.log-item.beaten { border-left-color: var(–beaten); }
+.log-item.quit { border-left-color: var(–quit); }
+.log-item.unlock { border-left-color: var(–accent3); }
+
+.log-title { font-weight: 700; margin-bottom: 2px; }
+.log-meta { color: var(–muted); font-size: 11px; }
+.log-reason { color: var(–muted); font-style: italic; margin-top: 4px; font-size: 12px; }
+
+/* MODAL */
+.modal-overlay {
+position: fixed;
+inset: 0;
+background: rgba(0,0,0,0.8);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 100;
+padding: 20px;
+backdrop-filter: blur(4px);
+}
+
+.modal {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 12px;
+padding: 28px;
+max-width: 480px;
+width: 100%;
+position: relative;
+}
+
+.modal-title {
+font-family: ‘Press Start 2P’, monospace;
+font-size: 10px;
+color: var(–accent3);
+margin-bottom: 20px;
+letter-spacing: 1px;
+}
+
+.modal label {
+display: block;
+font-size: 12px;
+color: var(–muted);
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-bottom: 6px;
+margin-top: 14px;
+}
+
+.modal textarea {
+width: 100%;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 10px 12px;
+color: var(–text);
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 14px;
+resize: vertical;
+min-height: 80px;
+outline: none;
+}
+.modal textarea:focus { border-color: var(–accent); }
+
+.modal input[type=number] {
+width: 100%;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 10px 12px;
+color: var(–text);
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 14px;
+outline: none;
+}
+.modal input[type=number]:focus { border-color: var(–accent); }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+/* SPINNING ANIMATION */
+.spinning { animation: spin-text 0.1s infinite; }
+@keyframes spin-text {
+0% { opacity: 1; }
+50% { opacity: 0.3; }
+100% { opacity: 1; }
+}
+
+.console-tag {
+display: inline-block;
+padding: 2px 8px;
+border-radius: 4px;
+font-size: 10px;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-right: 6px;
+}
+
+.tag-ps5 { background: rgba(0,70,160,0.3); color: #4488ff; border: 1px solid #4488ff; }
+.tag-ps4 { background: rgba(0,55,145,0.3); color: #3377ee; border: 1px solid #3377ee; }
+.tag-ps3 { background: rgba(0,40,100,0.3); color: #2266cc; border: 1px solid #2266cc; }
+.tag-ps2 { background: rgba(0,25,80,0.3); color: #1155aa; border: 1px solid #1155aa; }
+.tag-ps1 { background: rgba(0,15,60,0.3); color: #0044aa; border: 1px solid #0044aa; }
+.tag-switch { background: rgba(200,0,0,0.2); color: #ff4444; border: 1px solid #ff4444; }
+.tag-wii { background: rgba(150,150,150,0.2); color: #aaaaaa; border: 1px solid #aaaaaa; }
+.tag-gc { background: rgba(100,0,200,0.2); color: #aa44ff; border: 1px solid #aa44ff; }
+.tag-n64 { background: rgba(0,150,50,0.2); color: #00cc44; border: 1px solid #00cc44; }
+.tag-gba { background: rgba(150,80,0,0.2); color: #ffaa00; border: 1px solid #ffaa00; }
+.tag-ds { background: rgba(200,50,150,0.2); color: #ff66cc; border: 1px solid #ff66cc; }
+.tag-3ds { background: rgba(180,30,120,0.2); color: #ff44bb; border: 1px solid #ff44bb; }
+.tag-vita { background: rgba(0,100,150,0.2); color: #00ccff; border: 1px solid #00ccff; }
+.tag-genesis { background: rgba(80,0,0,0.2); color: #ff6666; border: 1px solid #ff6666; }
+.tag-xbox { background: rgba(0,100,0,0.2); color: #00cc00; border: 1px solid #00cc00; }
+
+.section-divider {
+border: none;
+border-top: 1px solid var(–border);
+margin: 20px 0;
+}
+
+.add-game-form {
+display: flex;
+gap: 8px;
+flex-wrap: wrap;
+}
+
+.add-game-form input, .add-game-form select {
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 8px 12px;
+color: var(–text);
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 14px;
+outline: none;
+}
+.add-game-form input { flex: 1; min-width: 140px; }
+.add-game-form input:focus, .add-game-form select:focus { border-color: var(–accent); }
+
+.tab-row {
+display: flex;
+gap: 4px;
+margin-bottom: 16px;
+border-bottom: 1px solid var(–border);
+padding-bottom: 0;
+}
+
+.tab {
+padding: 8px 16px;
+font-size: 12px;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 1px;
+cursor: pointer;
+border: none;
+background: none;
+color: var(–muted);
+border-bottom: 2px solid transparent;
+margin-bottom: -1px;
+transition: all 0.15s;
+font-family: ‘Rajdhani’, sans-serif;
+}
+
+.tab.active { color: var(–accent2); border-bottom-color: var(–accent2); }
+.tab:hover:not(.active) { color: var(–text); }
+
+.hidden { display: none !important; }
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <h1>🎮 Physical Game Challenge</h1>
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-num" id="stat-pool">0</span>
+      <span class="stat-label">In Pool</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="stat-beaten">0</span>
+      <span class="stat-label">Beaten</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="stat-quit">0</span>
+      <span class="stat-label">Quit</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="stat-total">0</span>
+      <span class="stat-label">Total</span>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- LEFT PANEL: CURRENT GAME + ACTIONS -->
+
+  <div class="panel">
+    <div class="panel-title">▶ Now Playing</div>
+
+```
+<div id="current-game-box">
+  <div class="empty-state">No game drawn yet.<br>Draw a game to begin!</div>
+</div>
+
+<button class="btn btn-draw" id="btn-draw" onclick="drawGame()">🎲 Draw Random Game</button>
+
+<hr class="section-divider">
+
+<div class="panel-title">🏆 New Release Unlock</div>
+<div class="unlock-bar-wrap">
+  <div class="unlock-label">
+    <span>Progress to unlock</span>
+    <span id="unlock-count">0 / 5</span>
+  </div>
+  <div class="unlock-pips" id="unlock-pips"></div>
+  <div class="unlock-ready hidden" id="unlock-ready">⭐ NEW RELEASE UNLOCKED!</div>
+</div>
+
+<hr class="section-divider">
+
+<div class="panel-title">🎯 Console Spin Wheel</div>
+<div id="wheel-result-box" class="hidden">
+  <div class="wheel-result">
+    <div class="wheel-result-label">Buy for this console</div>
+    <div class="wheel-result-console" id="wheel-result-text"></div>
+  </div>
+</div>
+<button class="btn btn-wheel" onclick="spinWheel()">🎰 Spin Console Wheel</button>
+
+<hr class="section-divider">
+
+<div class="panel-title">➕ Add New Game</div>
+<div class="add-game-form">
+  <input type="text" id="new-game-title" placeholder="Game title..." />
+  <select id="new-game-console">
+    <option value="">Console...</option>
+    <option value="PS5">PS5</option>
+    <option value="PS4">PS4</option>
+    <option value="PS3">PS3</option>
+    <option value="PS2">PS2</option>
+    <option value="PS1">PS1</option>
+    <option value="Switch">Switch</option>
+    <option value="Wii">Wii</option>
+    <option value="GameCube">GameCube</option>
+    <option value="N64">N64</option>
+    <option value="GBA">GBA</option>
+    <option value="NDS">NDS</option>
+    <option value="3DS">3DS</option>
+    <option value="Vita">Vita</option>
+    <option value="Genesis">Genesis</option>
+    <option value="Xbox OG">Xbox OG</option>
+  </select>
+  <button class="btn btn-secondary" onclick="addGame()">Add</button>
+</div>
+```
+
+  </div>
+
+  <!-- RIGHT PANEL: GAME POOL + LOG -->
+
+  <div class="panel" style="border-right:none;">
+
+```
+<div class="tab-row">
+  <button class="tab active" onclick="switchTab('pool')" id="tab-pool">Pool (<span id="tab-pool-count">0</span>)</button>
+  <button class="tab" onclick="switchTab('beaten')" id="tab-beaten">Beaten (<span id="tab-beaten-count">0</span>)</button>
+  <button class="tab" onclick="switchTab('log')" id="tab-log">Log</button>
+</div>
+
+<!-- POOL TAB -->
+<div id="tab-content-pool">
+  <div class="pool-controls">
+    <input class="search-input" type="text" placeholder="Search games..." oninput="renderPool()" id="search-input" />
+    <select class="filter-select" id="filter-console" onchange="renderPool()">
+      <option value="">All Consoles</option>
+      <option value="PS5">PS5</option>
+      <option value="PS4">PS4</option>
+      <option value="PS3">PS3</option>
+      <option value="PS2">PS2</option>
+      <option value="PS1">PS1</option>
+      <option value="Switch">Switch</option>
+      <option value="Wii">Wii</option>
+      <option value="GameCube">GameCube</option>
+      <option value="N64">N64</option>
+      <option value="GBA">GBA</option>
+      <option value="NDS">NDS</option>
+      <option value="3DS">3DS</option>
+      <option value="Vita">Vita</option>
+      <option value="Genesis">Genesis</option>
+      <option value="Xbox OG">Xbox OG</option>
+    </select>
+  </div>
+  <div class="game-list" id="pool-list"></div>
+</div>
+
+<!-- BEATEN TAB -->
+<div id="tab-content-beaten" class="hidden">
+  <div class="game-list" id="beaten-list"></div>
+</div>
+
+<!-- LOG TAB -->
+<div id="tab-content-log" class="hidden">
+  <div class="log-list" id="log-list"></div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- QUIT MODAL -->
+
+<div class="modal-overlay hidden" id="quit-modal">
+  <div class="modal">
+    <div class="modal-title">⚠ Quit Game</div>
+    <p style="font-size:14px; color:var(--muted); margin-bottom:4px;">You must provide honest, good-faith reasoning.</p>
+    <label>Hours Played</label>
+    <input type="number" id="quit-hours" min="0" step="0.5" placeholder="e.g. 3" />
+    <label>Reason for Quitting</label>
+    <textarea id="quit-reason" placeholder="Be honest. Why are you quitting?"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-quit" onclick="confirmQuit()">Confirm Quit</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- BEAT MODAL -->
+
+<div class="modal-overlay hidden" id="beat-modal">
+  <div class="modal">
+    <div class="modal-title">🏆 Game Beaten!</div>
+    <p style="font-size:18px; font-weight:700; margin-bottom:8px;" id="beat-game-name"></p>
+    <p style="font-size:14px; color:var(--muted);">Credits rolled. Mark this game as beaten?</p>
+    <div class="modal-actions">
+      <button class="btn btn-success" onclick="confirmBeat()">✓ Mark Beaten</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONSOLES = ['PS5','PS4','PS3','PS2','PS1','Switch','Wii','GameCube','N64','GBA','NDS','3DS','Vita','Genesis','Xbox OG'];
+
+const CONSOLE_TAG_MAP = {
+  'PS5':'ps5','PS4':'ps4','PS3':'ps3','PS2':'ps2','PS1':'ps1',
+  'Switch':'switch','Wii':'wii','GameCube':'gc','N64':'n64',
+  'GBA':'gba','NDS':'ds','3DS':'3ds','Vita':'vita',
+  'Genesis':'genesis','Xbox OG':'xbox'
+};
+
+const INITIAL_GAMES = [
+  // GameCube
+  {title:"Lego Star Wars II: The Original Trilogy", console:"GameCube"},
+  {title:"Tak 2", console:"GameCube"},
+  // PS1
+  {title:"Crash Bash", console:"PS1"},
+  // GBA
+  {title:"Metroid Zero Mission", console:"GBA"},
+  {title:"Sorry / Scrabble Jr. / Aggravation", console:"GBA"},
+  // N64
+  {title:"Wave Race", console:"N64"},
+  // Genesis
+  {title:"Sonic 2", console:"Genesis"},
+  {title:"Genesis 6-Pack", console:"Genesis"},
+  // NDS
+  {title:"CGC - My Fashion Mall", console:"NDS"},
+  {title:"Brain Age 2", console:"NDS"},
+  {title:"Imagine Fashion Designer World Tour", console:"NDS"},
+  {title:"Drama Queens", console:"NDS"},
+  {title:"Style Lab Makeover", console:"NDS"},
+  {title:"Lego Lord of the Rings", console:"NDS"},
+  // Switch
+  {title:"Echoes of Wisdom", console:"Switch"},
+  {title:"The Messenger", console:"Switch"},
+  {title:"TMNT: Shredder's Revenge", console:"Switch"},
+  {title:"Fist", console:"Switch"},
+  {title:"Super Mario 3D World + Bowser's Fury", console:"Switch"},
+  {title:"Lego Star Wars: The Skywalker Saga", console:"Switch"},
+  {title:"Metroid Dread", console:"Switch"},
+  {title:"Tears of the Kingdom", console:"Switch"},
+  {title:"Ori: The Collection", console:"Switch"},
+  {title:"Breath of the Wild", console:"Switch"},
+  {title:"Axiom Verge", console:"Switch"},
+  {title:"The Last Kids on Earth", console:"Switch"},
+  {title:"Metroid Prime Remastered", console:"Switch"},
+  {title:"Super Smash Bros. Ultimate", console:"Switch"},
+  {title:"Star Wars Heritage Pack", console:"Switch"},
+  {title:"Mario Kart 8 Deluxe", console:"Switch"},
+  {title:"Avatar: The Last Airbender - Quest for Balance", console:"Switch"},
+  {title:"NBA 2K26", console:"Switch"},
+  {title:"LA Noire", console:"Switch"},
+  {title:"Batman: Arkham Trilogy", console:"Switch"},
+  {title:"Assassin's Creed: The Ezio Collection", console:"Switch"},
+  {title:"Resident Evil Triple Pack", console:"Switch"},
+  {title:"Grand Theft Auto Trilogy", console:"Switch"},
+  {title:"Hollow Knight", console:"Switch"},
+  // PS4
+  {title:"Medievil", console:"PS4"},
+  {title:"Deadpool", console:"PS4"},
+  {title:"Injustice 2", console:"PS4"},
+  {title:"Lego Movie: The Video Game", console:"PS4"},
+  {title:"Oddworld: Soulstorm", console:"PS4"},
+  {title:"Lego Batman 3", console:"PS4"},
+  {title:"GI Joe: Operation Blackout", console:"PS4"},
+  {title:"Star Wars Battlefront", console:"PS4"},
+  {title:"MLB The Show 2017", console:"PS4"},
+  {title:"Lego Marvel Avengers", console:"PS4"},
+  {title:"Cyberpunk 2077", console:"PS4"},
+  {title:"Paw Patrol: On a Roll", console:"PS4"},
+  {title:"Lego Marvel Super Heroes 2", console:"PS4"},
+  {title:"Ghostbusters: Spirits Unleashed", console:"PS4"},
+  {title:"Lego Star Wars: The Skywalker Saga", console:"PS4"},
+  {title:"Marvel's Spider-Man: Miles Morales", console:"PS4"},
+  {title:"Miraculous: Rise of the Sphinx", console:"PS4"},
+  {title:"Gang Beasts", console:"PS4"},
+  {title:"Horizon Zero Dawn", console:"PS4"},
+  {title:"Minecraft Dungeons", console:"PS4"},
+  // PS3
+  {title:"Metal Gear Rising: Revengeance", console:"PS3"},
+  {title:"Deadpool", console:"PS3"},
+  // PS2
+  {title:"Gran Turismo 3", console:"PS2"},
+  {title:"Avatar: The Last Airbender", console:"PS2"},
+  {title:"Transformers: Revenge of the Fallen", console:"PS2"},
+  {title:"Final Fantasy X-2", console:"PS2"},
+  // PS5
+  {title:"Astro Bot", console:"PS5"},
+  {title:"Minecraft Dungeons", console:"PS5"},
+  {title:"Split Fiction", console:"PS5"},
+  {title:"Final Fantasy XVI", console:"PS5"},
+  {title:"Dog Man: Mission Impawsible", console:"PS5"},
+  {title:"College Football 25", console:"PS5"},
+  {title:"TMNT: The Cowabunga Collection", console:"PS5"},
+  {title:"Need for Speed Unbound", console:"PS5"},
+  {title:"Ratchet & Clank: Rift Apart", console:"PS5"},
+  {title:"Gran Turismo 7", console:"PS5"},
+  {title:"Just Dance 2021", console:"PS5"},
+  {title:"Marvel's Spider-Man 2", console:"PS5"},
+  {title:"Street Fighter 6", console:"PS5"},
+  {title:"Among Us: Crewmate Edition", console:"PS5"},
+  {title:"Sonic Frontiers", console:"PS5"},
+  {title:"Final Fantasy XV", console:"PS5"},
+  {title:"Lego Horizon Adventures", console:"PS5"},
+  {title:"Dragon Ball Xenoverse 2", console:"PS5"},
+  {title:"Curved Space", console:"PS5"},
+  {title:"Dragon Ball Z: Kakarot", console:"PS5"},
+  // Xbox OG
+  {title:"Chronicles of Riddick", console:"Xbox OG"},
+  {title:"Star Wars: Clone Wars", console:"Xbox OG"},
+  {title:"Tetris", console:"Xbox OG"},
+  {title:"Mech Assault", console:"Xbox OG"},
+  {title:"Prince of Persia: Warrior Within", console:"Xbox OG"},
+  {title:"Far Cry: Instincts Evolution", console:"Xbox OG"},
+  {title:"Prince of Persia: The Two Thrones", console:"Xbox OG"},
+  // Wii
+  {title:"New Super Mario Bros. Wii", console:"Wii"},
+  {title:"Mario Party 8", console:"Wii"},
+  {title:"Bass Pro: The Hunt", console:"Wii"},
+  {title:"Call of Duty: Modern Warfare 3", console:"Wii"},
+  {title:"Super Mario Galaxy 2", console:"Wii"},
+  {title:"Lego Batman 2", console:"Wii"},
+  {title:"Star Wars: The Force Unleashed", console:"Wii"},
+  {title:"Star Wars: Clone Wars Lightsaber Duels", console:"Wii"},
+  {title:"Wii Play", console:"Wii"},
+  {title:"Wii Sports", console:"Wii"},
+  {title:"Blazing Angels", console:"Wii"},
+  {title:"Zelda: Twilight Princess", console:"Wii"},
+  {title:"Centipede: Infestation", console:"Wii"},
+  {title:"Green Day: Rock Band", console:"Wii"},
+  // 3DS
+  {title:"Super Smash Bros.", console:"3DS"},
+  // Vita
+  {title:"Lego Legends of Chima", console:"Vita"},
+];
+
+// UNBEATABLE GAMES (sports, party, etc)
+const UNBEATABLE = [
+  "NBA 2K26", "MLB The Show 2017", "College Football 25", "Gran Turismo 3",
+  "Gran Turismo 7", "Wii Sports", "Wii Play", "Mario Party 8",
+  "Just Dance 2021", "Green Day: Rock Band"
+];
+
+// STATE
+let state = {
+  pool: [],
+  beaten: [],
+  current: null,
+  log: [],
+  beatsToUnlock: 0,
+  unlockAvailable: false,
+  nextId: 1
+};
+
+function init() {
+  // Load from localStorage or init fresh
+  const saved = localStorage.getItem('pgc-state');
+  if (saved) {
+    try { state = JSON.parse(saved); } catch(e) { freshState(); }
+  } else {
+    freshState();
+  }
+  render();
+}
+
+function freshState() {
+  state.pool = INITIAL_GAMES.map((g,i) => ({...g, id: i+1, status:'pool'}));
+  state.beaten = [];
+  state.current = null;
+  state.log = [];
+  state.beatsToUnlock = 0;
+  state.unlockAvailable = false;
+  state.nextId = INITIAL_GAMES.length + 1;
+  save();
+}
+
+function save() {
+  localStorage.setItem('pgc-state', JSON.stringify(state));
+}
+
+function render() {
+  updateStats();
+  renderCurrentGame();
+  renderPool();
+  renderBeaten();
+  renderLog();
+  renderUnlockBar();
+}
+
+function updateStats() {
+  document.getElementById('stat-pool').textContent = state.pool.length;
+  document.getElementById('stat-beaten').textContent = state.beaten.length;
+  const quits = state.log.filter(l=>l.type==='quit').length;
+  document.getElementById('stat-quit').textContent = quits;
+  document.getElementById('stat-total').textContent = state.pool.length + state.beaten.length;
+  document.getElementById('tab-pool-count').textContent = state.pool.length;
+  document.getElementById('tab-beaten-count').textContent = state.beaten.length;
+}
+
+function renderCurrentGame() {
+  const box = document.getElementById('current-game-box');
+  const drawBtn = document.getElementById('btn-draw');
+
+  if (!state.current) {
+    box.innerHTML = `<div class="empty-state">No game drawn yet.<br>Draw a game to begin!</div>`;
+    drawBtn.disabled = false;
+    return;
+  }
+
+  const g = state.current;
+  const tag = CONSOLE_TAG_MAP[g.console] || 'ps5';
+  const isUnbeatable = UNBEATABLE.some(u => g.title.toLowerCase().includes(u.toLowerCase()));
+
+  box.innerHTML = `
+    <div class="current-game">
+      <div class="current-game-console"><span class="console-tag tag-${tag}">${g.console}</span></div>
+      <div class="current-game-title" style="margin-top:8px;">${g.title}</div>
+      ${isUnbeatable ? `<div style="margin-top:8px;font-size:12px;color:var(--accent3);">⚠ Unbeatable game — custom completion rules apply</div>` : ''}
+      <div class="action-row">
+        <button class="btn btn-success" onclick="openBeatModal()">🏆 Beaten!</button>
+        <button class="btn btn-quit" onclick="openQuitModal()">🚪 Quit</button>
+      </div>
+    </div>
+  `;
+  drawBtn.disabled = true;
+}
+
+function renderPool() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const filterConsole = document.getElementById('filter-console').value;
+  const list = document.getElementById('pool-list');
+
+  let games = state.pool.filter(g => {
+    const matchSearch = g.title.toLowerCase().includes(search);
+    const matchConsole = !filterConsole || g.console === filterConsole;
+    return matchSearch && matchConsole;
+  });
+
+  if (games.length === 0) {
+    list.innerHTML = `<div class="empty-state" style="padding:20px;">No games found.</div>`;
+    return;
+  }
+
+  list.innerHTML = games.map(g => {
+    const tag = CONSOLE_TAG_MAP[g.console] || 'ps5';
+    const isCurrent = state.current && state.current.id === g.id;
+    return `
+      <div class="game-item ${isCurrent ? 'current' : ''}">
+        <div class="game-item-info">
+          <div class="game-item-title">${g.title}</div>
+          <div class="game-item-console"><span class="console-tag tag-${tag}">${g.console}</span></div>
+        </div>
+        ${isCurrent ? `<span class="badge badge-current">Playing</span>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderBeaten() {
+  const list = document.getElementById('beaten-list');
+  if (state.beaten.length === 0) {
+    list.innerHTML = `<div class="empty-state" style="padding:20px;">No games beaten yet. Get to it!</div>`;
+    return;
+  }
+  list.innerHTML = state.beaten.map(g => {
+    const tag = CONSOLE_TAG_MAP[g.console] || 'ps5';
+    return `
+      <div class="game-item">
+        <div class="game-item-info">
+          <div class="game-item-title">${g.title}</div>
+          <div class="game-item-console"><span class="console-tag tag-${tag}">${g.console}</span></div>
+        </div>
+        <span class="badge badge-beaten">Beaten</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderLog() {
+  const list = document.getElementById('log-list');
+  if (state.log.length === 0) {
+    list.innerHTML = `<div class="empty-state" style="padding:20px;">No entries yet.</div>`;
+    return;
+  }
+  list.innerHTML = [...state.log].reverse().map(l => {
+    if (l.type === 'beaten') {
+      return `<div class="log-item beaten">
+        <div class="log-title">🏆 ${l.title} <span style="color:var(--muted);font-weight:400;">(${l.console})</span></div>
+        <div class="log-meta">${l.date}</div>
+      </div>`;
+    } else if (l.type === 'quit') {
+      return `<div class="log-item quit">
+        <div class="log-title">🚪 ${l.title} <span style="color:var(--muted);font-weight:400;">(${l.console})</span></div>
+        <div class="log-meta">${l.date} · ${l.hours}hrs played</div>
+        <div class="log-reason">"${l.reason}"</div>
+      </div>`;
+    } else if (l.type === 'unlock') {
+      return `<div class="log-item unlock">
+        <div class="log-title">⭐ New Release Unlocked!</div>
+        <div class="log-meta">${l.date}</div>
+      </div>`;
+    }
+    return '';
+  }).join('');
+}
+
+function renderUnlockBar() {
+  const pips = document.getElementById('unlock-pips');
+  const readyEl = document.getElementById('unlock-ready');
+  const progress = state.beatsToUnlock % 5;
+  const isReady = state.unlockAvailable;
+  const count = isReady ? 5 : progress;
+
+  document.getElementById('unlock-count').textContent = `${count} / 5`;
+
+  pips.innerHTML = Array.from({length:5}, (_,i) => {
+    let cls = 'pip';
+    if (isReady) cls += ' ready';
+    else if (i < progress) cls += ' filled';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  if (isReady) {
+    readyEl.classList.remove('hidden');
+  } else {
+    readyEl.classList.add('hidden');
+  }
+}
+
+function drawGame() {
+  if (state.current) return;
+  const available = state.pool.filter(g => !state.current || state.current.id !== g.id);
+  if (available.length === 0) {
+    alert('No games in the pool!');
+    return;
+  }
+  const idx = Math.floor(Math.random() * available.length);
+  state.current = available[idx];
+  save();
+  render();
+}
+
+function spinWheel() {
+  const resultBox = document.getElementById('wheel-result-box');
+  const resultText = document.getElementById('wheel-result-text');
+  resultBox.classList.remove('hidden');
+  resultText.classList.add('spinning');
+  resultText.textContent = '???';
+
+  let spins = 0;
+  const total = 20 + Math.floor(Math.random() * 15);
+  const interval = setInterval(() => {
+    const c = CONSOLES[Math.floor(Math.random() * CONSOLES.length)];
+    resultText.textContent = c;
+    spins++;
+    if (spins >= total) {
+      clearInterval(interval);
+      resultText.classList.remove('spinning');
+      const final = CONSOLES[Math.floor(Math.random() * CONSOLES.length)];
+      resultText.textContent = final;
+    }
+  }, 80);
+}
+
+function openBeatModal() {
+  if (!state.current) return;
+  document.getElementById('beat-game-name').textContent = state.current.title;
+  document.getElementById('beat-modal').classList.remove('hidden');
+}
+
+function confirmBeat() {
+  if (!state.current) return;
+  const g = state.current;
+
+  // Remove from pool
+  state.pool = state.pool.filter(p => p.id !== g.id);
+  // Add to beaten
+  state.beaten.push({...g, beatenDate: new Date().toLocaleDateString()});
+  // Log
+  state.log.push({type:'beaten', title:g.title, console:g.console, date:new Date().toLocaleDateString()});
+  // Increment unlock
+  state.beatsToUnlock++;
+  if (state.beatsToUnlock % 5 === 0) {
+    state.unlockAvailable = true;
+    state.log.push({type:'unlock', date:new Date().toLocaleDateString()});
+  }
+
+  state.current = null;
+  closeModal();
+  save();
+  render();
+}
+
+function openQuitModal() {
+  document.getElementById('quit-hours').value = '';
+  document.getElementById('quit-reason').value = '';
+  document.getElementById('quit-modal').classList.remove('hidden');
+}
+
+function confirmQuit() {
+  const hours = parseFloat(document.getElementById('quit-hours').value);
+  const reason = document.getElementById('quit-reason').value.trim();
+
+  if (!hours || hours <= 0) { alert('Enter hours played.'); return; }
+  if (!reason || reason.length < 10) { alert('Please provide a real reason (at least 10 characters).'); return; }
+
+  const g = state.current;
+  state.pool = state.pool.filter(p => p.id !== g.id);
+  state.log.push({type:'quit', title:g.title, console:g.console, date:new Date().toLocaleDateString(), hours, reason});
+  state.current = null;
+  closeModal();
+  save();
+  render();
+}
+
+function closeModal() {
+  document.getElementById('quit-modal').classList.add('hidden');
+  document.getElementById('beat-modal').classList.add('hidden');
+}
+
+function addGame() {
+  const title = document.getElementById('new-game-title').value.trim();
+  const console_ = document.getElementById('new-game-console').value;
+  if (!title) { alert('Enter a game title.'); return; }
+  if (!console_) { alert('Select a console.'); return; }
+  state.pool.push({id: state.nextId++, title, console: console_, status:'pool'});
+  document.getElementById('new-game-title').value = '';
+  document.getElementById('new-game-console').value = '';
+  save();
+  render();
+}
+
+function switchTab(tab) {
+  ['pool','beaten','log'].forEach(t => {
+    document.getElementById(`tab-content-${t}`).classList.toggle('hidden', t !== tab);
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+  });
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) closeModal(); });
+});
+
+init();
+</script>
+
+</body>
+</html>
